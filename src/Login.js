@@ -1,59 +1,97 @@
-// src/Login.js
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import React, { useState } from 'react';
-import axios from 'axios';
-import './Login.css'; // Import the CSS file for styling
-
-const Login = () => {
+const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
-    const handleLogin = (e) => {
-        e.preventDefault();
 
-        axios.post('/login', { username, password })
-            .then(response => {
-                console.log('Login successful:', response.data);
-                window.location.href = "/home";
-            })
-            .catch(error => {
-                setError('Login failed. Please try again.');
-                console.error('There was an error logging in!', error);
+    const handleLogin = async (event) => {
+        event.preventDefault();
+
+        try {
+            const response = await fetch('http://localhost:8080/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    username,
+                    password,
+                }),
+                credentials: 'include',  // Include cookies in the request
             });
+            debugger;
+            if (response.redirected) {
+                // Handle redirection from the backend (Spring Security default behavior)
+                const redirectUrl = new URL(response.url);
+                if (response.url.includes('error')) {
+                    setError('Invalid username or password');
+                } else {
+                    navigate('/home');
+                }
+            } else if (response.ok) {
+                // Success case, navigate to home page
+                navigate('/home');
+            } else {
+                setError('An error occurred. Please try again.');
+            }
+        } catch (error) {
+            setError('An error occurred. Please try again.');
+        }
     };
 
     return (
-        <div className="login-container">
-            <div className="login-form">
-                <h2>Login</h2>
-                <form onSubmit={handleLogin}>
-                    <div className="form-group">
-                        <label htmlFor="username">Username:</label>
-                        <input 
-                            type="text" 
-                            id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)} 
-                            required 
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Password:</label>
-                        <input 
-                            type="password" 
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)} 
-                            required 
-                        />
-                    </div>
-                    <button type="submit" className="login-button">Login</button>
-                    {error && <p className="error-message">{error}</p>}
-                </form>
-            </div>
+        <div style={styles.container}>
+            <h1>Login Page</h1>
+            <form onSubmit={handleLogin} style={styles.form}>
+                <label>
+                    Username:
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                </label>
+                <br />
+                <label>
+                    Password:
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </label>
+                <br />
+                <button type="submit">Login</button>
+                {error && <p style={styles.error}>{error}</p>}
+            </form>
         </div>
     );
 };
 
-export default Login;
+const styles = {
+    container: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        backgroundColor: '#f0f0f0',
+        textAlign: 'center',
+    },
+    form: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+    },
+    error: {
+        color: 'red',
+    },
+};
+
+export default LoginPage;
