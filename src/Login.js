@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
@@ -6,7 +6,6 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
-
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -23,20 +22,27 @@ const LoginPage = () => {
                 }),
                 credentials: 'include',  // Include cookies in the request
             });
-            debugger;
-            if (response.redirected) {
+
+            if (response.ok) {
+                const data = await response.json();             
+                if (data.token) {
+                    // Save JWT token to localStorage
+                    localStorage.setItem('jwtToken', data.token);
+                    
+                    // Navigate to the home page after successful login
+                    navigate('/home');
+                } else {
+                    setError('Login failed: No token received.');
+                }
+            } else if (response.redirected) {
                 // Handle redirection from the backend (Spring Security default behavior)
-                const redirectUrl = new URL(response.url);
                 if (response.url.includes('error')) {
                     setError('Invalid username or password');
                 } else {
                     navigate('/home');
                 }
-            } else if (response.ok) {
-                // Success case, navigate to home page
-                navigate('/home');
             } else {
-                setError('An error occurred. Please try again.');
+                setError('Invalid username or password');
             }
         } catch (error) {
             setError('An error occurred. Please try again.');
