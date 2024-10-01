@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import HomePage from './Pages/HomePage';
 import Login from './Login';
+import axios from 'axios';
 
 function App() {
     const navigate = useNavigate();
@@ -19,13 +20,13 @@ function App() {
             }
 
             // Send request with JWT token in Authorization header
-            const response = await fetch('http://localhost:8080/test', {
-                method: 'GET',
+            const response = await axios.get('http://localhost:8080/test', {
                 headers: {
                     'Authorization': `Bearer ${token}`  // Attach token to request
                 },
+                withCredentials: true // To include credentials like cookies in cross-site requests
             });
-
+    
             // If the request fails, navigate to login
             if (response.status === 401 || response.status === 403) {
                 navigate("/login");

@@ -20,7 +20,7 @@ const LoginPage = () => {
                     username,
                     password,
                 }),
-                credentials: 'include',  // Include cookies in the request
+               // credentials: 'include',  // Include cookies in the request
             });
 
             if (response.ok) {
@@ -47,7 +47,8 @@ const LoginPage = () => {
         } catch (error) {
             setError('An error occurred. Please try again.');
         }
-    };
+    };			
+
 
     return (
         <div style={styles.container}>
